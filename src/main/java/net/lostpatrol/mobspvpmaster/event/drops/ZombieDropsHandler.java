@@ -1,0 +1,83 @@
+package net.lostpatrol.mobspvpmaster.event.drops;
+
+import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+
+import java.util.Collection;
+
+import static net.lostpatrol.mobspvpmaster.util.Constants.ENHANCED_ZOMBIE_BOOLEAN;
+
+@EventBusSubscriber(modid = MobsPVPMaster.MODID)
+public class ZombieDropsHandler {
+    // Enhanced Zombie Should Drop More
+    @SubscribeEvent
+    public static void onEnhancedZombieDrops(LivingDropsEvent event) {
+        if (event.getEntity().level().isClientSide())
+            return;
+
+        if (!(event.getEntity() instanceof Zombie zombie))
+            return;
+
+        if(! zombie.getPersistentData().getBoolean(ENHANCED_ZOMBIE_BOOLEAN).orElse(false))
+            return;
+
+        RandomSource random = zombie.getRandom();
+
+        // Wind charge drop
+        ItemStack windChargeStack = zombie.getItemBySlot(EquipmentSlot.OFFHAND).copy();
+        if (!windChargeStack.isEmpty() && windChargeStack.getItem() == Items.WIND_CHARGE) {
+            windChargeStack.setCount(Math.max(1, windChargeStack.getCount() - 1));
+            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), windChargeStack));
+        }
+
+        // Mace drop
+        if (!isInDrops(event.getDrops(), Items.MACE) && random.nextFloat() < 0.4f) {
+            ItemStack maceDrop = zombie.getItemBySlot(EquipmentSlot.MAINHAND).copy();
+            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), applyRandomDamage(maceDrop, random)));
+        }
+
+        // Armors drop
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack armorStack = zombie.getItemBySlot(slot);
+            if (armorStack.isEmpty())
+                continue;
+            if (isInDrops(event.getDrops(), armorStack.getItem()))
+                continue;
+            if (random.nextFloat() < 0.2f) {
+                ItemStack armorDrop = armorStack.copy();
+                event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), applyRandomDamage(armorDrop, random)));
+            }
+        }
+    }
+
+    private static boolean isInDrops(Collection<ItemEntity> drops, Item item) {
+        for (ItemEntity itemEntity : drops) {
+            if (itemEntity.getItem().getItem() == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ItemStack applyRandomDamage(ItemStack itemStack, RandomSource random) {
+        if (itemStack.isDamageableItem()) {
+            int maxDamage = itemStack.getMaxDamage();
+
+            float damagePercentage = 0.2f + (random.nextFloat() * 0.75f);
+            int damageAmount = (int) (maxDamage * damagePercentage);
+
+            damageAmount = Math.min(damageAmount, maxDamage - 1);
+            itemStack.setDamageValue(damageAmount);
+        }
+        return itemStack;
+    }
+}
