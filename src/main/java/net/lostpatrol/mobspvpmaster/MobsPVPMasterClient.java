@@ -1,6 +1,5 @@
 package net.lostpatrol.mobspvpmaster;
 
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -12,7 +11,6 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = MobsPVPMaster.MODID, dist = Dist.CLIENT)
-// You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
 @EventBusSubscriber(modid = MobsPVPMaster.MODID, value = Dist.CLIENT)
 public class MobsPVPMasterClient {
     public MobsPVPMasterClient(ModContainer container) {
@@ -25,6 +23,8 @@ public class MobsPVPMasterClient {
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
         MobsPVPMaster.LOGGER.info("HELLO FROM CLIENT SETUP");
-        MobsPVPMaster.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+//        event.enqueueWork(() -> {
+//            PhantomRenderHandler.register();
+//        });
     }
 }

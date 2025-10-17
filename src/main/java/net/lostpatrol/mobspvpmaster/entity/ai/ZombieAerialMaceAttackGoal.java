@@ -1,35 +1,24 @@
     package net.lostpatrol.mobspvpmaster.entity.ai;
 
     import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
-    import net.lostpatrol.mobspvpmaster.event.equips.ZombieEquipmentHandler;
     import net.minecraft.core.Direction;
     import net.minecraft.core.particles.ParticleTypes;
     import net.minecraft.core.registries.BuiltInRegistries;
-    import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
     import net.minecraft.server.level.ServerLevel;
-    import net.minecraft.server.level.ServerPlayer;
-    import net.minecraft.sounds.SoundEvent;
     import net.minecraft.sounds.SoundEvents;
     import net.minecraft.sounds.SoundSource;
     import net.minecraft.tags.BlockTags;
-    import net.minecraft.util.Mth;
     import net.minecraft.util.random.WeightedList;
     import net.minecraft.world.InteractionHand;
-    import net.minecraft.world.damagesource.DamageSource;
     import net.minecraft.world.entity.*;
-    import net.minecraft.world.entity.ai.attributes.Attributes;
     import net.minecraft.world.entity.ai.goal.Goal;
-    import net.minecraft.world.entity.decoration.ArmorStand;
     import net.minecraft.world.entity.monster.Zombie;
     import net.minecraft.world.entity.player.Player;
-    import net.minecraft.world.entity.projectile.Projectile;
     import net.minecraft.world.entity.projectile.windcharge.WindCharge;
     import net.minecraft.world.item.ItemStack;
     import net.minecraft.world.item.Items;
     import net.minecraft.world.item.MaceItem;
     import net.minecraft.world.item.WindChargeItem;
-    import net.minecraft.world.item.enchantment.EnchantmentHelper;
-    import net.minecraft.world.item.enchantment.Enchantments;
     import net.minecraft.world.level.ExplosionDamageCalculator;
     import net.minecraft.world.level.Level;
     import net.minecraft.world.level.SimpleExplosionDamageCalculator;
@@ -40,7 +29,6 @@
     import java.util.EnumSet;
     import java.util.Optional;
     import java.util.function.Function;
-    import java.util.function.Predicate;
 
     import net.lostpatrol.mobspvpmaster.event.equips.ZombieEquipmentHandler.ArmorLevel;
 
@@ -251,27 +239,15 @@
             logger.info("ZombieAerialMaceAttackGoal.performMaceSmashAttack()");
             zombie.swing(InteractionHand.MAIN_HAND);
 
-            SoundEvent soundevent = zombie.fallDistance > 5.0 ?
-                    SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-            zombie.level().playSound(null, zombie.blockPosition(),
-                    soundevent, SoundSource.HOSTILE, 1.0F, 1.0F);
-
     //        MaceItem mace = (MaceItem) zombie.getMainHandItem().getItem();
     //        float bonus = getAttackDamageBonus(target, 0,  zombie.damageSources().mobAttack(zombie));
     //        logger.info("ZombieAerialMaceAttackGoal.performMaceSmashAttack() bonus: " + bonus);
-    //        mace.hurtEnemy(zombie.getMainHandItem(), target, zombie);
             zombie.doHurtTarget((ServerLevel) zombie.level(),  target);
-
-            knockback(zombie.level(), zombie, target);
-
             zombie.setDeltaMovement(zombie.getDeltaMovement().with(Direction.Axis.Y, 0.01F));
             zombie.fallDistance = 0;
+
             isWindJumping = false;
             ticksSinceJump = 0;
-        }
-
-        private double getAttackReach(LivingEntity target) {
-            return zombie.getBbWidth() + target.getBbWidth() + 2.0;
         }
 
         private boolean canZombieSmashAttack() {
@@ -293,72 +269,6 @@
 
         protected boolean isTimeToAttack() {
             return this.ticksUntilNextAttack <= 0;
-        }
-
-        // These methods below are copied from MaceItem.java because they are private and I don't want to use AT.
-        private static void knockback(Level level, Entity attacker, Entity target) {
-            level.levelEvent(2013, target.getOnPos(), 750); // Smash Particles spawn here
-            level.getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(3.5), knockbackPredicate(attacker, target))
-                    .forEach(livingEntity -> {
-                        Vec3 vec3 = livingEntity.position().subtract(target.position());
-                        double d0 = getKnockbackPower(attacker, livingEntity, vec3);
-                        Vec3 vec31 = vec3.normalize().scale(d0);
-                        if (d0 > 0.0) {
-                            livingEntity.push(vec31.x, 0.7F, vec31.z);
-                            if (livingEntity instanceof ServerPlayer serverplayer) {
-                                serverplayer.connection.send(new ClientboundSetEntityMotionPacket(serverplayer));
-                            }
-                        }
-                    });
-        }
-
-        private static double getKnockbackPower(Entity attacker, LivingEntity entity, Vec3 offset) {
-            return (3.5 - offset.length())
-                    * 0.7F
-                    * (attacker.fallDistance > 5.0 ? 2 : 1)
-                    * (1.0 - entity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-        }
-
-        private static Predicate<LivingEntity> knockbackPredicate(Entity attacker, Entity target) {
-            return livingEntity -> {
-                boolean flag = !livingEntity.isSpectator();
-                boolean flag1 = livingEntity != attacker && livingEntity != target;
-                boolean flag2 = !attacker.isAlliedTo(livingEntity);
-                boolean flag3 = !(
-                        livingEntity instanceof TamableAnimal tamableanimal
-                                && target instanceof LivingEntity livingentity
-                                && tamableanimal.isTame()
-                                && tamableanimal.isOwnedBy(livingentity)
-                );
-                boolean flag4 = !(livingEntity instanceof ArmorStand armorstand && armorstand.isMarker());
-                boolean flag5 = target.distanceToSqr(livingEntity) <= Math.pow(3.5, 2.0);
-                return flag && flag1 && flag2 && flag3 && flag4 && flag5;
-            };
-        }
-
-        public float getAttackDamageBonus(Entity target, float damage, DamageSource damageSource) {
-            if (damageSource.getDirectEntity() instanceof LivingEntity livingentity) {
-                double d3 = 3.0;
-                double d0 = 8.0;
-                double d1 = livingentity.fallDistance;
-                double d2;
-                if (d1 <= 3.0) {
-                    d2 = 4.0 * d1;
-                } else if (d1 <= 8.0) {
-                    d2 = 12.0 + 2.0 * (d1 - 3.0);
-                } else {
-                    d2 = 22.0 + d1 - 8.0;
-                }
-                float bonus =  livingentity.level() instanceof ServerLevel serverlevel
-                        ? (float)(d2 + EnchantmentHelper.modifyFallBasedDamage(serverlevel, livingentity.getWeaponItem(), target, damageSource, 0.0F) * d1)
-                        : (float)d2;
-                if (bonus >= 20.0F){
-                    logger.info("A pvp master zombie just dealt {} damage in a single hit!", bonus);
-                }
-                return bonus;
-            } else {
-                return 0.0F;
-            }
         }
 
         public boolean isWithinAerialMaceAttackRange(LivingEntity entity) {
