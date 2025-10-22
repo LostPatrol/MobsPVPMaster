@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 
 @OnlyIn(Dist.CLIENT)
 public class EnhancedPhantomRenderer extends MobRenderer<Phantom, PhantomHoldingRenderState, EnhancedPhantomModel> {
-    public Logger logger = MobsPVPMaster.LOGGER;
+    public static final Logger logger = MobsPVPMaster.LOGGER;
 
     private static final ResourceLocation PHANTOM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/phantom.png");
 

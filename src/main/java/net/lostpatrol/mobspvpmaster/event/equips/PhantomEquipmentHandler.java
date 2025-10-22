@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 
 @EventBusSubscriber(modid = MobsPVPMaster.MODID)
 public class PhantomEquipmentHandler {
-    public static Logger logger = MobsPVPMaster.LOGGER;
+    public static final Logger logger = MobsPVPMaster.LOGGER;
 
     @SubscribeEvent
     public static void onPhantomSpawn(EntityJoinLevelEvent event) {

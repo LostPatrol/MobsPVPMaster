@@ -1,6 +1,7 @@
 package net.lostpatrol.mobspvpmaster.event.drops;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
+import net.lostpatrol.mobspvpmaster.util.Util;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -40,9 +41,9 @@ public class ZombieDropsHandler {
         }
 
         // Mace drop
-        if (!isInDrops(event.getDrops(), Items.MACE) && random.nextFloat() < 0.4f) {
+        if (!Util.isItemInDrops(event.getDrops(), Items.MACE) && random.nextFloat() < 0.4f) {
             ItemStack maceDrop = zombie.getItemBySlot(EquipmentSlot.MAINHAND).copy();
-            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), applyRandomDamage(maceDrop, random)));
+            event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), Util.applyRandomDamage(maceDrop, random, 0.2F, 0.65F)));
         }
 
         // Armors drop
@@ -50,34 +51,12 @@ public class ZombieDropsHandler {
             ItemStack armorStack = zombie.getItemBySlot(slot);
             if (armorStack.isEmpty())
                 continue;
-            if (isInDrops(event.getDrops(), armorStack.getItem()))
+            if (Util.isItemInDrops(event.getDrops(), armorStack.getItem()))
                 continue;
             if (random.nextFloat() < 0.2f) {
                 ItemStack armorDrop = armorStack.copy();
-                event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), applyRandomDamage(armorDrop, random)));
+                event.getDrops().add(new ItemEntity(zombie.level(), zombie.getX(), zombie.getY(), zombie.getZ(), Util.applyRandomDamage(armorDrop, random, 0.2F, 0.65F)));
             }
         }
-    }
-
-    private static boolean isInDrops(Collection<ItemEntity> drops, Item item) {
-        for (ItemEntity itemEntity : drops) {
-            if (itemEntity.getItem().getItem() == item) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static ItemStack applyRandomDamage(ItemStack itemStack, RandomSource random) {
-        if (itemStack.isDamageableItem()) {
-            int maxDamage = itemStack.getMaxDamage();
-
-            float damagePercentage = 0.2f + (random.nextFloat() * 0.75f);
-            int damageAmount = (int) (maxDamage * damagePercentage);
-
-            damageAmount = Math.min(damageAmount, maxDamage - 1);
-            itemStack.setDamageValue(damageAmount);
-        }
-        return itemStack;
     }
 }

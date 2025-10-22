@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 @Mod(value = MobsPVPMaster.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = MobsPVPMaster.MODID, value = Dist.CLIENT)
 public class ClientEventHandler {
-    public static Logger logger = MobsPVPMaster.LOGGER;
+    public static final Logger logger = MobsPVPMaster.LOGGER;
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(EntityType.PHANTOM, EnhancedPhantomRenderer::new);

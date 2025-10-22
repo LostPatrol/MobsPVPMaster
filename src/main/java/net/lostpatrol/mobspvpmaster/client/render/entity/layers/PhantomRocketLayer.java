@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 
 @OnlyIn(Dist.CLIENT)
 public class PhantomRocketLayer extends RenderLayer<PhantomHoldingRenderState, EnhancedPhantomModel> {
-    public Logger logger = MobsPVPMaster.LOGGER;
+    public static final Logger logger = MobsPVPMaster.LOGGER;
 
     public PhantomRocketLayer(RenderLayerParent<PhantomHoldingRenderState, EnhancedPhantomModel> renderLayerParent) {
         super(renderLayerParent);

@@ -34,7 +34,7 @@
 
     public class ZombieAerialMaceAttackGoal extends Goal {
 
-        public Logger logger = MobsPVPMaster.LOGGER;
+        public static final Logger logger = MobsPVPMaster.LOGGER;
 
         private static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(
                 true, false, Optional.of(1.22F), BuiltInRegistries.BLOCK.get(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())
