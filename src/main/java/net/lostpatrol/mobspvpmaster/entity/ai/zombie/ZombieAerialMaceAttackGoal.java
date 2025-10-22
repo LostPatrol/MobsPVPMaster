@@ -1,9 +1,13 @@
-    package net.lostpatrol.mobspvpmaster.entity.ai;
+    package net.lostpatrol.mobspvpmaster.entity.ai.zombie;
 
     import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
+    import net.lostpatrol.mobspvpmaster.util.Constants.ArmorLevel;
     import net.minecraft.core.Direction;
+    import net.minecraft.core.Holder;
+    import net.minecraft.core.Registry;
     import net.minecraft.core.particles.ParticleTypes;
     import net.minecraft.core.registries.BuiltInRegistries;
+    import net.minecraft.core.registries.Registries;
     import net.minecraft.server.level.ServerLevel;
     import net.minecraft.sounds.SoundEvents;
     import net.minecraft.sounds.SoundSource;
@@ -19,6 +23,8 @@
     import net.minecraft.world.item.Items;
     import net.minecraft.world.item.MaceItem;
     import net.minecraft.world.item.WindChargeItem;
+    import net.minecraft.world.item.enchantment.Enchantment;
+    import net.minecraft.world.item.enchantment.Enchantments;
     import net.minecraft.world.level.ExplosionDamageCalculator;
     import net.minecraft.world.level.Level;
     import net.minecraft.world.level.SimpleExplosionDamageCalculator;
@@ -30,7 +36,6 @@
     import java.util.Optional;
     import java.util.function.Function;
 
-    import net.lostpatrol.mobspvpmaster.event.equips.ZombieEquipmentHandler.ArmorLevel;
 
     public class ZombieAerialMaceAttackGoal extends Goal {
 
@@ -56,6 +61,8 @@
 
         private static final int MAX_JUMP_TICKS = 50;
         private static final float WIND_JUMP_CHANCE = 0.8f;
+
+        private int hasWindBurst = -1;
 
 
         public ZombieAerialMaceAttackGoal(Zombie zombie, ArmorLevel armorLevel, double speedModifier, boolean followingTargetEvenIfNotSeen) {
@@ -243,10 +250,20 @@
     //        float bonus = getAttackDamageBonus(target, 0,  zombie.damageSources().mobAttack(zombie));
     //        logger.info("ZombieAerialMaceAttackGoal.performMaceSmashAttack() bonus: " + bonus);
             zombie.doHurtTarget((ServerLevel) zombie.level(),  target);
-            zombie.setDeltaMovement(zombie.getDeltaMovement().with(Direction.Axis.Y, 0.01F));
+//            zombie.setDeltaMovement(zombie.getDeltaMovement().with(Direction.Axis.Y, 0.01F));
             zombie.fallDistance = 0;
 
-            isWindJumping = false;
+            if(this.hasWindBurst == -1 && this.armorLevel == ArmorLevel.NETHERITE) {
+                Registry<Enchantment> enchantmentRegistry = zombie.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+                if (zombie.getMainHandItem().getEnchantmentLevel(enchantmentRegistry.getOrThrow(Enchantments.WIND_BURST)) > 0) {
+                    this.hasWindBurst = 1;
+                } else {
+                    this.hasWindBurst = 0;
+                }
+            }
+
+            this.isWindJumping = this.hasWindBurst == 1;
+
             ticksSinceJump = 0;
         }
 

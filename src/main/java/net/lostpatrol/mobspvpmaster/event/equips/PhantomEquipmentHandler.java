@@ -1,7 +1,7 @@
 package net.lostpatrol.mobspvpmaster.event.equips;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
-import net.lostpatrol.mobspvpmaster.entity.ai.PhantomRocketChargeAttackGoal;
+import net.lostpatrol.mobspvpmaster.entity.ai.phantom.PhantomRocketChargeAttackGoal;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;

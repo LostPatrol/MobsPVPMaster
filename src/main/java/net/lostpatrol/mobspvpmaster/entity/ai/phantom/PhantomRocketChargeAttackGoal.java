@@ -1,4 +1,4 @@
-package net.lostpatrol.mobspvpmaster.entity.ai;
+package net.lostpatrol.mobspvpmaster.entity.ai.phantom;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
 import net.lostpatrol.mobspvpmaster.util.Constants;

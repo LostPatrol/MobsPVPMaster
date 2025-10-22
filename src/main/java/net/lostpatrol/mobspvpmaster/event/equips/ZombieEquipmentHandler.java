@@ -1,13 +1,15 @@
 package net.lostpatrol.mobspvpmaster.event.equips;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
-import net.lostpatrol.mobspvpmaster.entity.ai.ZombieAerialMaceAttackGoal;
+import net.lostpatrol.mobspvpmaster.entity.ai.zombie.ZombieAerialMaceAttackGoal;
+import net.lostpatrol.mobspvpmaster.util.Constants.ArmorLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,16 +28,11 @@ import static net.lostpatrol.mobspvpmaster.util.Constants.ENHANCED_ZOMBIE_BOOLEA
 @EventBusSubscriber(modid = MobsPVPMaster.MODID)
 public class ZombieEquipmentHandler {
     private static final float EQUIP_MACE_CHANCE = 0.1f;
+
     private static final float EQUIP_IRON_CHANCE = 0.4f;
     private static final float EQUIP_DIAMOND_CHANCE = 0.3f;
     private static final float EQUIP_NETHERITE_CHANCE = 0.1f;
     private static final int WIND_BULLET_COOLDOWN = 100;
-
-    public enum ArmorLevel {
-        IRON,
-        DIAMOND,
-        NETHERITE
-    }
 
     public static final int[] LEVEL_CHANCES = new int[]{
             0,
@@ -60,7 +57,8 @@ public class ZombieEquipmentHandler {
 
     public static final List<ResourceKey<Enchantment>> NETHERITE_MACE_EXTRA_ENCHANTMENTS = List.of(
             Enchantments.BREACH,
-            Enchantments.DENSITY
+            Enchantments.DENSITY,
+            Enchantments.WIND_BURST
     );
 
     public static final List<ResourceKey<Enchantment>> IRON_ARMOR_COMMON_ENCHANTMENTS = List.of(
@@ -116,7 +114,7 @@ public class ZombieEquipmentHandler {
         ItemStack enchantedItem = randomEnchant(item, random, maxLevel, totalLevel, availableEnchantments, enchantmentRegistry);
 
         if (armorLevel == ArmorLevel.NETHERITE){
-            enchantedItem.enchant(enchantmentRegistry.getOrThrow(NETHERITE_MACE_EXTRA_ENCHANTMENTS.get(random.nextInt(2))), random.nextInt(1,4));
+            enchantedItem.enchant(enchantmentRegistry.getOrThrow(NETHERITE_MACE_EXTRA_ENCHANTMENTS.get(random.nextInt(2))), random.nextInt(1,3));
         }
         return enchantedItem;
     }
@@ -223,9 +221,15 @@ public class ZombieEquipmentHandler {
         if (!(event.getEntity() instanceof Zombie zombie))
             return;
 
+        if (zombie.isBaby() && zombie.getVehicle() instanceof Chicken)
+            return;
+
+        if (!isHandsEmpty(zombie))
+            return;
+
         RandomSource random = zombie.getRandom();
 
-        if (isHandsEmpty(zombie) && random.nextFloat() < EQUIP_MACE_CHANCE) {
+        if (random.nextFloat() < EQUIP_MACE_CHANCE) {
             zombie.setLeftHanded(false);
             ArmorLevel armorLevel = ArmorLevel.IRON;
 

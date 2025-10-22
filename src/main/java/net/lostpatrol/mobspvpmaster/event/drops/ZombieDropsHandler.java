@@ -1,21 +1,17 @@
 package net.lostpatrol.mobspvpmaster.event.drops;
 
 import net.lostpatrol.mobspvpmaster.MobsPVPMaster;
+import net.lostpatrol.mobspvpmaster.util.Constants;
 import net.lostpatrol.mobspvpmaster.util.Util;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
-
-import java.util.Collection;
-
-import static net.lostpatrol.mobspvpmaster.util.Constants.ENHANCED_ZOMBIE_BOOLEAN;
 
 @EventBusSubscriber(modid = MobsPVPMaster.MODID)
 public class ZombieDropsHandler {
@@ -28,7 +24,7 @@ public class ZombieDropsHandler {
         if (!(event.getEntity() instanceof Zombie zombie))
             return;
 
-        if(! zombie.getPersistentData().getBoolean(ENHANCED_ZOMBIE_BOOLEAN).orElse(false))
+        if(! zombie.getPersistentData().getBoolean(Constants.ENHANCED_ZOMBIE_BOOLEAN).orElse(false))
             return;
 
         RandomSource random = zombie.getRandom();
